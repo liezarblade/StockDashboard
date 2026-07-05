@@ -1,0 +1,33 @@
+:root[data-theme="dark"] {
+    --bg-primary: #0F171E; /* Prime Video deep blue/black */
+    --bg-secondary: #1A242F;
+    --bg-panel: #141b24;
+    --text-primary: #FFFFFF;
+    --text-secondary: #8197A4;
+    --accent: #00A8E1; /* Prime Video blue */
+    --accent-hover: #007CA6;
+    --border: #252F3D;
+    
+    --buy-color: #2ECC71;
+    --sell-color: #E74C3C;
+    --hold-color: #F1C40F;
+    
+    --card-bg: #22303C;
+}
+
+:root[data-theme="light"] {
+    --bg-primary: #F0F2F5;
+    --bg-secondary: #FFFFFF;
+    --bg-panel: #FFFFFF;
+    --text-primary: #1A1A1A;
+    --text-secondary: #555555;
+    --accent: #00A8E1;
+    --accent-hover: #007CA6;
+    --border: #E1E8ED;
+    
+    --buy-color: #27AE60;
+    --sell-color: #C0392B;
+    --hold-color: #F39C12;
+    
+    --card-bg: #F8F9FA;
+}
