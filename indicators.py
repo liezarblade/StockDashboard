@@ -4,58 +4,65 @@ import ta
 import numpy as np
 from datetime import datetime
 
-def calculate_confidence(price, rsi, macd, macd_signal, psar, bollinger_l, bollinger_h):
-    score = 50 # Start neutral
+def calculate_confidence(price, rsi, macd, macd_signal, psar, ema200, bollinger_l, bollinger_h, adx, current_close, prev_close, volume_ratio):
+    score = 0
     
-    # RSI (0-100)
+    # RSI (10%)
     if not pd.isna(rsi):
-        if rsi < 30:
-            score += 20
-        elif rsi > 70:
-            score -= 20
-        elif rsi > 50:
-            score += 5
-        else:
-            score -= 5
+        if rsi < 30: score += 10
+        elif rsi > 70: score += 0
+        else: score += 5
         
-    # MACD
+    # MACD (25%)
     if not pd.isna(macd) and not pd.isna(macd_signal):
-        if macd > macd_signal:
-            score += 15 # Bullish crossover
-        else:
-            score -= 15 # Bearish crossover
+        if macd > macd_signal: score += 25
         
-    # PSAR
+    # PSAR (5%)
     if not pd.isna(psar):
-        if price > psar:
-            score += 15 # Bullish
-        else:
-            score -= 15 # Bearish
+        if price > psar: score += 5
         
-    # Bollinger
+    # EMA 200 (20%)
+    if not pd.isna(ema200):
+        if price > ema200: score += 20
+        
+    # ADX (10%)
+    if not pd.isna(adx):
+        # ADX > 25 indicates strong trend.
+        if adx > 25 and (not pd.isna(ema200) and price > ema200):
+            score += 10
+        elif adx < 25:
+            score += 5
+            
+    # Bollinger (15%)
     if not pd.isna(bollinger_l) and not pd.isna(bollinger_h):
-        if price < bollinger_l:
-            score += 10 # Bounced off lower
-        elif price > bollinger_h:
-            score -= 10 # Rejected at upper
+        if price < bollinger_l: score += 15
+        elif price > bollinger_h: score += 0
+        else: score += 7
         
+    # Volume (15%) - User Logic
+    if not pd.isna(volume_ratio):
+        if current_close > prev_close and volume_ratio > 1.5:
+            score += 15
+        elif current_close < prev_close and volume_ratio > 1.5:
+            score -= 15
+        elif volume_ratio < 0.8:
+            score -= 5
+            
     score = max(0, min(100, score)) # Clamp 0-100
     
-    if score >= 65:
-        rec = "BUY"
-    elif score <= 35:
-        rec = "SELL"
-    else:
-        rec = "HOLD"
+    if score >= 65: rec = "BUY"
+    elif score <= 35: rec = "SELL"
+    else: rec = "HOLD"
         
     return score, rec
 
 def fetch_and_calculate(ticker: str):
     try:
         stock = yf.Ticker(ticker)
-        df = stock.history(period="6mo")
+        # Fetch 1y to have enough data for EMA 200
+        df = stock.history(period="1y")
         
-        if df.empty:
+        if df.empty or len(df) < 20:
             return None
             
         info = stock.info
@@ -71,18 +78,28 @@ def fetch_and_calculate(ticker: str):
         psar = ta.trend.PSARIndicator(high=df['High'], low=df['Low'], close=df['Close'])
         df['PSAR'] = psar.psar()
         
+        df['EMA_200'] = ta.trend.EMAIndicator(close=df['Close'], window=200).ema_indicator()
+        
+        adx_ind = ta.trend.ADXIndicator(high=df['High'], low=df['Low'], close=df['Close'], window=14)
+        df['ADX'] = adx_ind.adx()
+        
         bb = ta.volatility.BollingerBands(close=df['Close'], window=20, window_dev=2)
         df['BB_High'] = bb.bollinger_hband()
         df['BB_Low'] = bb.bollinger_lband()
         
         latest = df.iloc[-1]
-        prev = df.iloc[-2] if len(df) > 1 else latest
+        prev = df.iloc[-2]
         
         current_price = latest['Close']
         prev_close = prev['Close']
         change_pct = ((current_price - prev_close) / prev_close) * 100
         
         volume = latest['Volume']
+        
+        # Volume Logic
+        avg_volume = df["Volume"].rolling(20).mean().iloc[-1]
+        today_volume = volume
+        volume_ratio = today_volume / avg_volume if avg_volume else 1
         
         high_52w = info.get("fiftyTwoWeekHigh", df['High'].max())
         low_52w = info.get("fiftyTwoWeekLow", df['Low'].min())
@@ -91,8 +108,8 @@ def fetch_and_calculate(ticker: str):
         support = recent_period['Low'].min()
         resistance = recent_period['High'].max()
         
-        max_price = df['High'].max()
-        min_price = df['Low'].min()
+        max_price = df['High'].tail(130).max() # Roughly 6 mo for Fib
+        min_price = df['Low'].tail(130).min()
         diff = max_price - min_price
         
         fib_levels = {
@@ -106,7 +123,8 @@ def fetch_and_calculate(ticker: str):
         
         score, rec = calculate_confidence(
             current_price, latest['RSI'], latest['MACD'], latest['MACD_Signal'], 
-            latest['PSAR'], latest['BB_Low'], latest['BB_High']
+            latest['PSAR'], latest['EMA_200'], latest['BB_Low'], latest['BB_High'], 
+            latest['ADX'], current_price, prev_close, volume_ratio
         )
         
         chart_data = []
@@ -125,6 +143,8 @@ def fetch_and_calculate(ticker: str):
             "RSI": round(latest['RSI'], 2) if not pd.isna(latest['RSI']) else 50,
             "MACD": "Bullish" if latest['MACD'] > latest['MACD_Signal'] else "Bearish",
             "PSAR": round(latest['PSAR'], 2) if not pd.isna(latest['PSAR']) else 0,
+            "EMA_200": round(latest['EMA_200'], 2) if not pd.isna(latest['EMA_200']) else 0,
+            "ADX": round(latest['ADX'], 2) if not pd.isna(latest['ADX']) else 0,
             "Bollinger": "Upper" if current_price > latest['BB_High'] else ("Lower" if current_price < latest['BB_Low'] else "Inside"),
             "BB_High": round(latest['BB_High'], 2) if not pd.isna(latest['BB_High']) else 0,
             "BB_Low": round(latest['BB_Low'], 2) if not pd.isna(latest['BB_Low']) else 0,

@@ -5,16 +5,12 @@ document.addEventListener('DOMContentLoaded', () => {
         fetch(`${API_BASE}/refresh`, { method: 'POST' })
             .then(res => res.json())
             .then(data => {
-                console.log(data);
-                // Optionally show a toast that refresh started
-                setTimeout(loadStocks, 5000); // Check again after 5s
+                console.log("Refresh triggered", data);
             });
     });
     
     setupSearch();
-    
-    // Auto-refresh every 15 seconds to load data as background thread finishes
-    setInterval(loadStocks, 15000);
+    setupWebSocket();
 });
 
 function loadStocks() {
@@ -22,9 +18,37 @@ function loadStocks() {
         .then(res => res.json())
         .then(data => {
             if (window.updateGridData && data.length > 0) {
+                data.sort((a, b) => b.Confidence - a.Confidence);
                 window.updateGridData(data);
             }
         });
+}
+
+function setupWebSocket() {
+    let wsUrl = '';
+    if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+        wsUrl = 'ws://127.0.0.1:8000/ws';
+    } else {
+        wsUrl = 'wss://stockdashboard-ioba.onrender.com/ws';
+    }
+    
+    const ws = new WebSocket(wsUrl);
+    
+    ws.onopen = () => {
+        console.log("WebSocket connected. Listening for live updates.");
+    };
+    
+    ws.onmessage = (event) => {
+        const data = JSON.parse(event.data);
+        if (window.applyGridTransaction) {
+            window.applyGridTransaction([data]);
+        }
+    };
+    
+    ws.onclose = () => {
+        console.log("WebSocket disconnected. Reconnecting in 5s...");
+        setTimeout(setupWebSocket, 5000);
+    };
 }
 
 function setupSearch() {
@@ -69,7 +93,6 @@ function setupSearch() {
         }, 500);
     });
     
-    // Close dropdown on click outside
     document.addEventListener('click', (e) => {
         if (!e.target.closest('.search-container')) {
             dropdown.style.display = 'none';

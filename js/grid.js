@@ -56,6 +56,7 @@ const gridOptions = {
     },
     rowData: [],
     rowSelection: 'single',
+    getRowId: (params) => params.data.Ticker,
     onRowClicked: (event) => {
         if (window.openPanel) {
             window.openPanel(event.data.Ticker);
@@ -71,4 +72,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
 window.updateGridData = function(data) {
     gridOptions.api.setRowData(data);
+};
+
+window.applyGridTransaction = function(items) {
+    if (gridOptions.api) {
+        // If row doesn't exist, it will be added, if it does, it will be updated
+        gridOptions.api.applyTransaction({ update: items, add: items });
+        // Optionally resort after update
+        gridOptions.api.refreshClientSideRowModel('sort');
+    }
 };
