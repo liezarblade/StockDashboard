@@ -2,12 +2,8 @@ const API_BASE = window.location.hostname === 'localhost' || window.location.hos
     ? 'http://127.0.0.1:8000' 
     : 'https://stockdashboard-ioba.onrender.com';
 
-let chart = null;
-let lineSeries = null;
-
 document.addEventListener('DOMContentLoaded', () => {
     setupSearch();
-    initChart();
 });
 
 function setupSearch() {
@@ -57,40 +53,10 @@ function setupSearch() {
     });
 }
 
-function initChart() {
-    const chartContainer = document.getElementById('chart-container');
-    chart = LightweightCharts.createChart(chartContainer, {
-        layout: {
-            background: { type: 'solid', color: 'transparent' },
-            textColor: '#d1d4dc',
-        },
-        grid: {
-            vertLines: { color: 'rgba(42, 46, 57, 0.5)' },
-            horzLines: { color: 'rgba(42, 46, 57, 0.5)' },
-        },
-        rightPriceScale: {
-            borderVisible: false,
-        },
-        timeScale: {
-            borderVisible: false,
-        },
-    });
-
-    lineSeries = chart.addLineSeries({
-        color: '#E50914', // Netflix Red
-        lineWidth: 2,
-    });
-    
-    window.addEventListener('resize', () => {
-        chart.resize(chartContainer.clientWidth, 400);
-    });
-}
-
 function loadStockData(ticker) {
     document.getElementById('welcome-message').style.display = 'none';
     document.getElementById('stock-details').style.display = 'block';
     
-    // Show loading state
     document.getElementById('panel-ticker').textContent = 'Loading...';
     
     fetch(`${API_BASE}/stock/${ticker}`)
@@ -131,10 +97,33 @@ function loadStockData(ticker) {
             document.getElementById('fib-61').textContent = `₹${fibs["61.8%"]}`;
             document.getElementById('fib-100').textContent = `₹${fibs["100%"]}`;
             
-            // Update Chart
-            if (data.ChartData && data.ChartData.length > 0) {
-                lineSeries.setData(data.ChartData);
-                chart.timeScale().fitContent();
-            }
+            // Dynamic Formula Generation
+            const b = data.Breakdown;
+            const text = 
+`1. MACD (25% max):
+   MACD Line (${data.MACD_Val}) ${data.MACD_Val > data.MACD_Sig ? '>' : '<'} Signal Line (${data.MACD_Sig})  =>  +${b.MACD} Points
+
+2. EMA 200 (20% max):
+   Current Price (₹${data.Price}) ${data.Price > data.EMA_200 ? '>' : '<'} EMA 200 (₹${data.EMA_200})  =>  +${b.EMA} Points
+
+3. Volume Ratio (15% max):
+   Volume Ratio is ${data.VolumeRatio}x  =>  ${b.Volume > 0 ? '+' : ''}${b.Volume} Points
+
+4. Bollinger Bands (15% max):
+   Price (₹${data.Price}) is ${data.Bollinger}  =>  +${b.Bollinger} Points
+
+5. RSI (10% max):
+   RSI is ${data.RSI}  =>  +${b.RSI} Points
+
+6. ADX (10% max):
+   ADX is ${data.ADX}  =>  +${b.ADX} Points
+
+7. Parabolic SAR (5% max):
+   Price (₹${data.Price}) ${data.Price > data.PSAR ? '>' : '<'} PSAR (₹${data.PSAR})  =>  +${b.PSAR} Points
+
+---------------------------------------------------
+TOTAL SCORE: ${data.Confidence}% (${data.Recommendation})
+`;
+            document.getElementById('dynamic-formula').textContent = text;
         });
 }

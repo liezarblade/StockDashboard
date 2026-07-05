@@ -21,7 +21,7 @@
         </div>
 
         <div class="controls">
-            <button id="theme-toggle" class="btn">Toggle Theme</button>
+            <button id="theme-toggle" style="background: none; border: none; font-size: 14px; text-decoration: underline; color: var(--text-primary); cursor: pointer; padding: 10px;">Dark / White</button>
         </div>
     </div>
 
@@ -42,8 +42,6 @@
                     <p id="panel-change" class="change-pct">0.00%</p>
                 </div>
             </div>
-
-            <div class="chart-container" id="chart-container"></div>
 
             <div class="metrics-grid">
                 <div class="metric-box">
@@ -93,42 +91,8 @@
             </div>
 
             <div class="algorithm-explanation">
-                <h3>Algorithm Scoring Formula</h3>
-                <pre><code>Base Score = 0% (Clamped to Max 100%, Min 0%)
-
-1. MACD (25%): 
-   IF MACD Line > Signal Line => +25
-
-2. EMA 200 (20%): 
-   IF Current Price > 200-day EMA => +20
-
-3. Volume Ratio (15%):
-   IF Price Closed Higher AND Volume > 1.5x 20-day Avg => +15
-   IF Price Closed Lower AND Volume > 1.5x 20-day Avg => -15
-   IF Volume < 0.8x 20-day Avg => -5
-
-4. Bollinger Bands (15%):
-   IF Price < Lower Band => +15 (Oversold bounce)
-   IF Price between Lower & Upper => +7
-   IF Price > Upper Band => +0 (Overbought)
-
-5. RSI (10%):
-   IF RSI < 30 => +10 (Strong buy)
-   IF RSI between 30 and 70 => +5
-   IF RSI > 70 => +0
-
-6. ADX (10%):
-   IF ADX > 25 AND Price > EMA 200 => +10 (Strong Uptrend)
-   IF ADX < 25 => +5 (Sideways)
-
-7. PSAR (5%):
-   IF Price > Parabolic SAR dots => +5
-   
-Recommendation:
-Score >= 65%  => 🟢 BUY
-Score <= 35%  => 🔴 SELL
-Otherwise     => 🟡 HOLD
-</code></pre>
+                <h3>Algorithm Scoring Breakdown</h3>
+                <pre><code id="dynamic-formula">Select a stock to see the calculation...</code></pre>
             </div>
         </div>
     </div>
