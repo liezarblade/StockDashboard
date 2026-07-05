@@ -5,7 +5,7 @@ from indicators import fetch_and_calculate
 
 CACHE_FILE = "data/cache.json"
 
-DEFAULT_STOCKS = ["ITC.NS", "RELIANCE.NS", "BEL.NS", "HAL.NS", "TATAMOTORS.NS"]
+DEFAULT_STOCKS = ["ITC.NS", "RELIANCE.NS", "BEL.NS", "HAL.NS", "INFY.NS"]
 
 def get_all_stocks():
     if not os.path.exists(CACHE_FILE):

@@ -1,5 +1,7 @@
 from fastapi import FastAPI, BackgroundTasks
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
 from typing import List, Dict, Any
 import uvicorn
 import stocks
@@ -13,6 +15,13 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+app.mount("/css", StaticFiles(directory="css"), name="css")
+app.mount("/js", StaticFiles(directory="js"), name="js")
+
+@app.get("/")
+def read_root():
+    return FileResponse("index.html")
 
 @app.on_event("startup")
 async def startup_event():
