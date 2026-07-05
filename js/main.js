@@ -12,6 +12,9 @@ document.addEventListener('DOMContentLoaded', () => {
     });
     
     setupSearch();
+    
+    // Auto-refresh every 15 seconds to load data as background thread finishes
+    setInterval(loadStocks, 15000);
 });
 
 function loadStocks() {

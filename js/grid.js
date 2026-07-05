@@ -21,6 +21,13 @@ const gridOptions = {
         },
         { field: "Ticker", hide: true },
         { field: "Company", width: 250, filter: true },
+        { 
+            field: "Confidence", 
+            headerName: "Score %",
+            width: 120,
+            filter: 'agNumberColumnFilter',
+            sort: 'desc'
+        },
         { field: "Price", width: 120, filter: 'agNumberColumnFilter' },
         { 
             field: "ChangePct", 
