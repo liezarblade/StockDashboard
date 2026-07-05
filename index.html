@@ -1,119 +1,139 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="dark">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Stock Dashboard</title>
-    <!-- CSS -->
+    <title>N-STOCKS Dashboard</title>
     <link rel="stylesheet" href="css/variables.css">
     <link rel="stylesheet" href="css/style.css">
-    <!-- AG Grid -->
-    <script src="https://cdn.jsdelivr.net/npm/ag-grid-community/dist/ag-grid-community.min.js"></script>
-    <!-- Lightweight Charts -->
     <script src="https://unpkg.com/lightweight-charts/dist/lightweight-charts.standalone.production.js"></script>
 </head>
-<body>
-    <header class="topbar">
-        <div class="logo"><span style="color:var(--accent); font-weight: 900;"></span>Signals</div>
+<body data-theme="dark">
+    <div class="topbar">
+        <div class="logo">
+            <span style="color: var(--accent); font-weight: 900; font-size: 24px; letter-spacing: 2px;">N</span>
+            <span style="font-weight: bold; letter-spacing: 1px;">-STOCKS</span>
+        </div>
+        
         <div class="search-container">
-            <input type="text" id="search-input" placeholder="Search Stocks..." autocomplete="off">
-            <div id="search-dropdown" class="dropdown-content"></div>
+            <input type="text" id="search-input" placeholder="Search for stocks (e.g. RELIANCE)...">
+            <div id="search-dropdown" class="search-dropdown"></div>
         </div>
+
         <div class="controls">
-            <button id="refresh-btn">Refresh</button>
-            <button id="theme-toggle">☀</button>
+            <button id="theme-toggle" class="btn">Toggle Theme</button>
         </div>
-    </header>
+    </div>
 
-    <main class="main-content">
-        <!-- Grid Container -->
-        <div class="grid-wrapper">
-            <div id="myGrid" class="ag-theme-alpine-dark"></div>
+    <div class="main-content" id="main-content">
+        <div id="welcome-message" style="text-align: center; padding: 100px 20px;">
+            <h1 style="font-size: 36px; color: var(--text-secondary); margin-bottom: 20px;">Welcome to N-STOCKS</h1>
+            <p style="font-size: 16px; color: var(--text-secondary);">Use the search bar above to instantly analyze any NSE stock.</p>
         </div>
 
-        <!-- Slide Out Panel -->
-        <div id="side-panel" class="side-panel">
+        <div id="stock-details" style="display: none;">
             <div class="panel-header">
                 <div>
-                    <h2 id="panel-company">Company Name</h2>
-                    <span id="panel-ticker" class="ticker">TICKER</span>
+                    <h2 id="panel-ticker">TICKER</h2>
+                    <p id="panel-company" class="company-name">Company Name</p>
                 </div>
-                <button id="close-panel">✕</button>
-            </div>
-            
-            <div class="panel-stats">
-                <div class="stat-card">
-                    <span class="label">Price</span>
-                    <span id="panel-price" class="value">₹0.00</span>
-                </div>
-                <div class="stat-card">
-                    <span class="label">Change</span>
-                    <span id="panel-change" class="value">0.00%</span>
-                </div>
-                <div class="stat-card">
-                    <span class="label">Recommendation</span>
-                    <span id="panel-rec" class="value badge">BUY</span>
-                </div>
-                <div class="stat-card">
-                    <span class="label">Confidence</span>
-                    <span id="panel-conf" class="value">0%</span>
+                <div style="text-align: right;">
+                    <h2 id="panel-price">₹0.00</h2>
+                    <p id="panel-change" class="change-pct">0.00%</p>
                 </div>
             </div>
 
-            <!-- Chart Container -->
-            <div id="chart-container" class="chart-container"></div>
+            <div class="chart-container" id="chart-container"></div>
 
-            <!-- Indicators Grid -->
-            <div class="indicators-grid">
-                <div class="indicator-group">
-                    <h3>Trend & Momentum</h3>
-                    <div class="indicator-row">
-                        <span>RSI (14)</span>
-                        <span id="panel-rsi">--</span>
-                    </div>
-                    <div class="indicator-row">
-                        <span>MACD</span>
-                        <span id="panel-macd">--</span>
-                    </div>
-                    <div class="indicator-row">
-                        <span>PSAR</span>
-                        <span id="panel-psar">--</span>
-                    </div>
+            <div class="metrics-grid">
+                <div class="metric-box">
+                    <span class="metric-label">Signal</span>
+                    <span class="metric-value" id="panel-rec">-</span>
                 </div>
+                <div class="metric-box">
+                    <span class="metric-label">Score</span>
+                    <span class="metric-value" id="panel-score">0%</span>
+                </div>
+                <div class="metric-box">
+                    <span class="metric-label">RSI (14)</span>
+                    <span class="metric-value" id="panel-rsi">0</span>
+                </div>
+                <div class="metric-box">
+                    <span class="metric-label">MACD</span>
+                    <span class="metric-value" id="panel-macd">-</span>
+                </div>
+                <div class="metric-box">
+                    <span class="metric-label">EMA (200)</span>
+                    <span class="metric-value" id="panel-ema">0</span>
+                </div>
+                <div class="metric-box">
+                    <span class="metric-label">ADX (14)</span>
+                    <span class="metric-value" id="panel-adx">0</span>
+                </div>
+                <div class="metric-box">
+                    <span class="metric-label">Bollinger</span>
+                    <span class="metric-value" id="panel-bb">-</span>
+                </div>
+                <div class="metric-box">
+                    <span class="metric-label">Volume</span>
+                    <span class="metric-value" id="panel-vol">0</span>
+                </div>
+            </div>
 
-                <div class="indicator-group">
-                    <h3>Levels</h3>
-                    <div class="indicator-row">
-                        <span>Support</span>
-                        <span id="panel-support">--</span>
-                    </div>
-                    <div class="indicator-row">
-                        <span>Resistance</span>
-                        <span id="panel-resistance">--</span>
-                    </div>
-                    <div class="indicator-row">
-                        <span>Bollinger Bands</span>
-                        <span id="panel-bollinger">--</span>
-                    </div>
+            <div class="fib-section">
+                <h3>Fibonacci Retracement (6mo)</h3>
+                <div class="fib-grid">
+                    <div class="fib-item"><span>0% (High)</span><span id="fib-0">₹0</span></div>
+                    <div class="fib-item"><span>23.6%</span><span id="fib-23">₹0</span></div>
+                    <div class="fib-item"><span>38.2%</span><span id="fib-38">₹0</span></div>
+                    <div class="fib-item"><span>50.0%</span><span id="fib-50">₹0</span></div>
+                    <div class="fib-item"><span>61.8%</span><span id="fib-61">₹0</span></div>
+                    <div class="fib-item"><span>100% (Low)</span><span id="fib-100">₹0</span></div>
                 </div>
+            </div>
 
-                <div class="indicator-group">
-                    <h3>Fibonacci Retracement</h3>
-                    <div class="indicator-row"><span>0%</span><span id="panel-fib-0">--</span></div>
-                    <div class="indicator-row"><span>23.6%</span><span id="panel-fib-23">--</span></div>
-                    <div class="indicator-row"><span>38.2%</span><span id="panel-fib-38">--</span></div>
-                    <div class="indicator-row"><span>50%</span><span id="panel-fib-50">--</span></div>
-                    <div class="indicator-row"><span>61.8%</span><span id="panel-fib-61">--</span></div>
-                    <div class="indicator-row"><span>100%</span><span id="panel-fib-100">--</span></div>
-                </div>
+            <div class="algorithm-explanation">
+                <h3>Algorithm Scoring Formula</h3>
+                <pre><code>Base Score = 0% (Clamped to Max 100%, Min 0%)
+
+1. MACD (25%): 
+   IF MACD Line > Signal Line => +25
+
+2. EMA 200 (20%): 
+   IF Current Price > 200-day EMA => +20
+
+3. Volume Ratio (15%):
+   IF Price Closed Higher AND Volume > 1.5x 20-day Avg => +15
+   IF Price Closed Lower AND Volume > 1.5x 20-day Avg => -15
+   IF Volume < 0.8x 20-day Avg => -5
+
+4. Bollinger Bands (15%):
+   IF Price < Lower Band => +15 (Oversold bounce)
+   IF Price between Lower & Upper => +7
+   IF Price > Upper Band => +0 (Overbought)
+
+5. RSI (10%):
+   IF RSI < 30 => +10 (Strong buy)
+   IF RSI between 30 and 70 => +5
+   IF RSI > 70 => +0
+
+6. ADX (10%):
+   IF ADX > 25 AND Price > EMA 200 => +10 (Strong Uptrend)
+   IF ADX < 25 => +5 (Sideways)
+
+7. PSAR (5%):
+   IF Price > Parabolic SAR dots => +5
+   
+Recommendation:
+Score >= 65%  => 🟢 BUY
+Score <= 35%  => 🔴 SELL
+Otherwise     => 🟡 HOLD
+</code></pre>
             </div>
         </div>
-    </main>
+    </div>
 
-    <!-- Scripts -->
-    <script src="js/theme.js"></script>
-    <script src="js/grid.js"></script>
-    <script src="js/panel.js"></script>
     <script src="js/main.js"></script>
+    <script src="js/theme.js"></script>
 </body>
 </html>
