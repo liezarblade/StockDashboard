@@ -1,33 +1,33 @@
 :root[data-theme="dark"] {
-    --bg-primary: #0F171E; /* Prime Video deep blue/black */
-    --bg-secondary: #1A242F;
-    --bg-panel: #141b24;
+    --bg-primary: #141414; /* Netflix black */
+    --bg-secondary: #000000;
+    --bg-panel: #181818;
     --text-primary: #FFFFFF;
-    --text-secondary: #8197A4;
-    --accent: #00A8E1; /* Prime Video blue */
-    --accent-hover: #007CA6;
-    --border: #252F3D;
+    --text-secondary: #B3B3B3;
+    --accent: #E50914; /* Netflix Red */
+    --accent-hover: #F40612;
+    --border: #333333;
     
-    --buy-color: #2ECC71;
-    --sell-color: #E74C3C;
-    --hold-color: #F1C40F;
+    --buy-color: #46D369;
+    --sell-color: #E50914;
+    --hold-color: #FFB53F;
     
-    --card-bg: #22303C;
+    --card-bg: #222222;
 }
 
 :root[data-theme="light"] {
-    --bg-primary: #F0F2F5;
+    --bg-primary: #F3F3F3;
     --bg-secondary: #FFFFFF;
     --bg-panel: #FFFFFF;
-    --text-primary: #1A1A1A;
+    --text-primary: #141414;
     --text-secondary: #555555;
-    --accent: #00A8E1;
-    --accent-hover: #007CA6;
-    --border: #E1E8ED;
+    --accent: #E50914;
+    --accent-hover: #F40612;
+    --border: #CCCCCC;
     
     --buy-color: #27AE60;
-    --sell-color: #C0392B;
+    --sell-color: #E50914;
     --hold-color: #F39C12;
     
-    --card-bg: #F8F9FA;
+    --card-bg: #EAEAEA;
 }
