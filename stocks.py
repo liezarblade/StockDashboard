@@ -1,6 +1,7 @@
 import json
 import os
 import concurrent.futures
+import threading
 from indicators import fetch_and_calculate
 
 CACHE_FILE = "data/cache.json"
@@ -28,29 +29,29 @@ DEFAULT_STOCKS = [
     "LTTS.NS", "OFSS.NS", "M&MFIN.NS", "PFC.NS", "RECLTD.NS"
 ]
 
-# Provide a callback mechanism for WebSockets
 on_stock_updated = None
+cache_lock = threading.Lock()
 
-def get_all_stocks():
-    if not os.path.exists(CACHE_FILE):
-        return []
-    with open(CACHE_FILE, "r") as f:
-        try:
-            data = json.load(f)
-            return list(data.values())
-        except json.JSONDecodeError:
-            return []
-
-def get_stock_data(ticker: str):
+def load_cache():
     if os.path.exists(CACHE_FILE):
         with open(CACHE_FILE, "r") as f:
             try:
-                data = json.load(f)
-                if ticker in data:
-                    return data[ticker]
-            except json.JSONDecodeError:
+                return json.load(f)
+            except:
                 pass
-    
+    return {}
+
+MEMORY_CACHE = load_cache()
+
+def get_all_stocks():
+    with cache_lock:
+        return list(MEMORY_CACHE.values())
+
+def get_stock_data(ticker: str):
+    with cache_lock:
+        if ticker in MEMORY_CACHE:
+            return MEMORY_CACHE[ticker]
+            
     result = fetch_and_calculate(ticker)
     if result:
         update_cache(ticker, result)
@@ -60,32 +61,19 @@ def get_stock_data(ticker: str):
     return {"error": "Failed to fetch data"}
 
 def update_cache(ticker: str, data: dict):
-    cache = {}
-    if os.path.exists(CACHE_FILE):
-        with open(CACHE_FILE, "r") as f:
-            try:
-                cache = json.load(f)
-            except json.JSONDecodeError:
-                pass
-    cache[ticker] = data
-    os.makedirs(os.path.dirname(CACHE_FILE), exist_ok=True)
-    with open(CACHE_FILE, "w") as f:
-        json.dump(cache, f, indent=4)
+    with cache_lock:
+        MEMORY_CACHE[ticker] = data
+        os.makedirs(os.path.dirname(CACHE_FILE), exist_ok=True)
+        with open(CACHE_FILE, "w") as f:
+            json.dump(MEMORY_CACHE, f, indent=4)
 
 def refresh_all_stocks():
-    cache = {}
-    if os.path.exists(CACHE_FILE):
-        with open(CACHE_FILE, "r") as f:
-            try:
-                cache = json.load(f)
-            except json.JSONDecodeError:
-                pass
-    
-    tickers_to_refresh = list(cache.keys())
+    with cache_lock:
+        tickers_to_refresh = list(MEMORY_CACHE.keys())
+        
     if not tickers_to_refresh:
         tickers_to_refresh = DEFAULT_STOCKS
     
-    # Process concurrently, broadcast results as they arrive
     with concurrent.futures.ThreadPoolExecutor(max_workers=10) as executor:
         future_to_ticker = {executor.submit(fetch_and_calculate, t): t for t in tickers_to_refresh}
         for future in concurrent.futures.as_completed(future_to_ticker):
@@ -100,5 +88,5 @@ def refresh_all_stocks():
                 print(f"Error refreshing {t}: {e}")
 
 def init_cache():
-    if not os.path.exists(CACHE_FILE) or os.path.getsize(CACHE_FILE) == 0:
+    if not MEMORY_CACHE:
         refresh_all_stocks()

@@ -1,18 +1,18 @@
 :root[data-theme="dark"] {
-    --bg-primary: #141414; /* Netflix black */
+    --bg-primary: #000000; /* Pure black Netflix */
     --bg-secondary: #000000;
-    --bg-panel: #181818;
+    --bg-panel: #141414; /* Netflix dark grey */
     --text-primary: #FFFFFF;
     --text-secondary: #B3B3B3;
     --accent: #E50914; /* Netflix Red */
     --accent-hover: #F40612;
-    --border: #333333;
+    --border: #222222;
     
     --buy-color: #46D369;
     --sell-color: #E50914;
     --hold-color: #FFB53F;
     
-    --card-bg: #222222;
+    --card-bg: #141414;
 }
 
 :root[data-theme="light"] {

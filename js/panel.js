@@ -17,7 +17,10 @@ window.openPanel = async function(ticker) {
     
     // Slide out
     sidePanel.classList.add('open');
-    gridWrapper.style.marginRight = '500px'; // Push grid left
+    
+    if (window.innerWidth > 768) {
+        gridWrapper.style.marginRight = '500px'; // Push grid left only on desktop
+    }
     
     // Fetch data
     try {

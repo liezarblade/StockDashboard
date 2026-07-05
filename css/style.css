@@ -245,10 +245,11 @@ body {
 
 /* AG Grid custom theme overrides */
 .ag-theme-alpine-dark {
-    --ag-background-color: var(--bg-secondary);
-    --ag-header-background-color: var(--bg-primary);
+    --ag-background-color: var(--bg-primary);
+    --ag-header-background-color: var(--bg-panel);
     --ag-row-border-color: var(--border);
-    --ag-odd-row-background-color: var(--bg-secondary);
+    --ag-odd-row-background-color: var(--bg-primary);
+    --ag-row-hover-color: rgba(229, 9, 20, 0.15); /* Netflix Red hover effect */
 }
 
 .ag-theme-alpine-light {
@@ -256,8 +257,35 @@ body {
     --ag-header-background-color: var(--bg-primary);
     --ag-row-border-color: var(--border);
     --ag-odd-row-background-color: var(--bg-secondary);
+    --ag-row-hover-color: rgba(229, 9, 20, 0.10);
 }
 
 .color-green { color: var(--buy-color); font-weight: bold; }
 .color-red { color: var(--sell-color); font-weight: bold; }
 .color-yellow { color: var(--hold-color); font-weight: bold; }
+
+/* Mobile Responsiveness */
+@media (max-width: 768px) {
+    .topbar {
+        flex-direction: column;
+        height: auto;
+        padding: 10px;
+    }
+    .search-container {
+        width: 100%;
+        margin-top: 10px;
+        margin-bottom: 10px;
+    }
+    .controls {
+        width: 100%;
+        display: flex;
+        justify-content: space-between;
+    }
+    .side-panel {
+        width: 100%;
+        right: -100%;
+    }
+    .grid-wrapper {
+        margin-right: 0 !important;
+    }
+}
