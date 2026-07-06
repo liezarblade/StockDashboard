@@ -85,7 +85,9 @@ def fetch_and_calculate(ticker: str):
         if df.empty or len(df) < 20:
             return None
             
-        info = stock.info
+        df = df.dropna(subset=['Close'])
+            
+        info = stock.info if hasattr(stock, 'info') else {}
         company_name = info.get("shortName", ticker)
         
         # Calculate indicators
@@ -106,6 +108,8 @@ def fetch_and_calculate(ticker: str):
         bb = ta.volatility.BollingerBands(close=df['Close'], window=20, window_dev=2)
         df['BB_High'] = bb.bollinger_hband()
         df['BB_Low'] = bb.bollinger_lband()
+        
+        df = df.ffill()
         
         latest = df.iloc[-1]
         prev = df.iloc[-2]
